@@ -1,0 +1,42 @@
+.shell-game-container {
+    margin: 0 auto;
+    width: 300px;
+  }
+  
+  .cups-container {
+    display: flex;
+    justify-content: space-around;
+    margin: 20px 0;
+  }
+  
+  .cup {
+    width: 60px;
+    height: 80px;
+    background-color: red;
+    border-radius: 5px 5px 0 0;
+    cursor: pointer;
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  
+  .cup:hover {
+    opacity: 0.8;
+  }
+  
+  .ball {
+    width: 20px;
+    height: 20px;
+    background-color: gold;
+    border-radius: 50%;
+    margin-bottom: 10px;
+  }
+  
+  .hidden-ball {
+    width: 20px;
+    height: 20px;
+    margin-bottom: 10px;
+    visibility: hidden; /* Keep placeholder space but hide the ball */
+  }
+  
