@@ -1,6 +1,6 @@
 # Shell Game
 
-A single‐player shell game built with React (frontend) and Node.js + lowdb (backend).
+A single‐player shell game built OpenAI o1 model utilizing Node.js, React (frontend) and Express + lowdb (backend).
 
 ## Game Concept
 
