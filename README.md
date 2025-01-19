@@ -2,7 +2,7 @@
 
 A single‐player shell game built with OpenAI o1 model utilizing Node.js, React (frontend) and Express + lowdb (backend).
 
-Demo availble [here] (https://shell-game-88b6a1a8adfc.herokuapp.com)
+Demo availble [here](https://shell-game-88b6a1a8adfc.herokuapp.com)
 
 ## Game Concept
 
