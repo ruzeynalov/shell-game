@@ -11,15 +11,21 @@
     "build": "cd client && npm run build"
   },
   "engines": {
-  "node": "18.x"
-},
+    "node": "18.x"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "concurrently": "^7.6.0",
+    "cors": "^2.8.5",
     "express": "^4.18.2",
-    "lowdb": "^6.0.1",
-    "cors": "^2.8.5"
+    "lowdb": "^7.0.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "axios": "^1.7.9",
+    "react-scripts": "^5.0.1"
   }
 }
