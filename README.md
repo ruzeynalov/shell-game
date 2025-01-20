@@ -2,8 +2,6 @@
 
 A single‐player shell game built with OpenAI o1 model utilizing Node.js, React (frontend) and Express + lowdb (backend).
 
-Demo availble [here](https://shell-game-88b6a1a8adfc.herokuapp.com)
-
 ## Game Concept
 
 - You have **3 cups** and **1 ball**.  
