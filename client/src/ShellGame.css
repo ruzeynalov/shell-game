@@ -1,3 +1,4 @@
+/* ShellGame.css */
 .shell-game-container {
   width: 600px;
   margin: 0 auto;
@@ -5,22 +6,10 @@
   padding: 20px;
 }
 
-  .cups-container {
-    display: none; /* No longer used, replaced by canvas */
-  }
-  
-  .cup {
-    width: 60px;
-    height: 80px;
-    background-color: red;
-    border-radius: 5px 5px 0 0;
-    cursor: pointer;
-    position: relative;
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
-  }
-  
-  .cup, .ball, .hidden-ball {
-    display: none; /* We replaced them with canvas rendering */
-  }
+.cups-container {
+  display: none; /* No longer used, replaced by canvas */
+}
+
+.cup, .ball, .hidden-ball {
+  display: none; /* We replaced them with canvas rendering */
+}

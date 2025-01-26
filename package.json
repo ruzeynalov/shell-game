@@ -26,6 +26,7 @@
   },
   "devDependencies": {
     "axios": "^1.7.9",
-    "react-scripts": "^5.0.1"
+    "react-scripts": "^5.0.1",
+    "redis": "^4.7.0"
   }
 }

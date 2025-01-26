@@ -34,6 +34,16 @@
       "username": "Rustam",
       "outcome": "win",
       "timestamp": "2025-01-26T19:41:30.260Z"
+    },
+    {
+      "username": "Inna",
+      "outcome": "lose",
+      "timestamp": "2025-01-26T19:47:50.316Z"
+    },
+    {
+      "username": "Inna",
+      "outcome": "lose",
+      "timestamp": "2025-01-26T19:47:56.397Z"
     }
   ]
 }

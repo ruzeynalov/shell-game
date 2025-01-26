@@ -2,7 +2,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import './ShellGame.css';
-// NEW imports:
 import ShellGameCanvas from './ShellGameCanvas.js';
 import Leaderboard from './Leaderboard.js';
 
