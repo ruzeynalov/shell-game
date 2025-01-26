@@ -64,6 +64,12 @@ app.post('/api/results', async (req, res) => {
   }
 });
 
+// 3) Optionally serve your React build
+app.use(express.static(path.join(__dirname, 'client/build')));
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
+});
+
 // Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
