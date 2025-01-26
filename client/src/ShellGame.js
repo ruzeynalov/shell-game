@@ -1,16 +1,20 @@
+// ShellGame.js
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import './ShellGame.css';
+// NEW imports:
+import ShellGameCanvas from './ShellGameCanvas.js';
+import Leaderboard from './Leaderboard.js';
 
 function ShellGame({ username }) {
-  const [ballPosition, setBallPosition] = useState(null);  // 0,1,2
-  const [attemptsUsed, setAttemptsUsed] = useState(0);     // how many guesses so far
-  const [disabledCups, setDisabledCups] = useState([false, false, false]); // track which cups can be clicked
+  const [ballPosition, setBallPosition] = useState(null);  // 0..2
+  const [attemptsUsed, setAttemptsUsed] = useState(0);
+  const [disabledCups, setDisabledCups] = useState([false, false, false]);
   const [message, setMessage] = useState('');
   const [wins, setWins] = useState(0);
   const [losses, setLosses] = useState(0);
   const [gameOver, setGameOver] = useState(false);
-  const [foundBall, setFoundBall] = useState(false);       // did the user guess correctly?
+  const [foundBall, setFoundBall] = useState(false);
 
   const correctSFXRef = useRef(null);
   const wrongSFXRef = useRef(null);
@@ -19,10 +23,8 @@ function ShellGame({ username }) {
     // Load stats from local storage
     const localWins = localStorage.getItem(`${username}_shellGameWins`);
     const localLosses = localStorage.getItem(`${username}_shellGameLosses`);
-
     if (localWins) setWins(parseInt(localWins, 10));
     if (localLosses) setLosses(parseInt(localLosses, 10));
-
     startNewRound();
   }, [username]);
 
@@ -40,7 +42,6 @@ function ShellGame({ username }) {
   }
 
   async function handleGuess(cupIndex) {
-    // If the game is already over or the cup is disabled, do nothing
     if (gameOver || disabledCups[cupIndex]) return;
 
     // Mark the cup as disabled
@@ -53,10 +54,9 @@ function ShellGame({ username }) {
     // Increase attempt count
     setAttemptsUsed(prev => prev + 1);
 
-    // Check if guess is correct
+    // Check correctness
     const success = (cupIndex === ballPosition);
     if (success) {
-      // User wins
       setFoundBall(true);
       setGameOver(true);
       setMessage('Correct! You found the ball!');
@@ -71,7 +71,6 @@ function ShellGame({ username }) {
       await saveResultToDB('win');
     } else {
       // Wrong guess
-      // If this was the second attempt, user loses
       if (attemptsUsed + 1 === 2) {
         setGameOver(true);
         setMessage('Wrong! You used 2 tries. You lose!');
@@ -85,7 +84,6 @@ function ShellGame({ username }) {
         // Save to DB
         await saveResultToDB('lose');
       } else {
-        // Still has another attempt
         setMessage('Wrong guess. Try again!');
         wrongSFXRef.current?.play();
       }
@@ -108,45 +106,29 @@ function ShellGame({ username }) {
       <h2>Hello, {username}!</h2>
       <p>Wins: {wins} | Losses: {losses}</p>
 
-      <div className="cups-container">
-        {[0, 1, 2].map((cupIndex) => {
-          // Grey out if disabled
-          const style = {
-            opacity: disabledCups[cupIndex] ? 0.5 : 1,
-            cursor: disabledCups[cupIndex] ? 'not-allowed' : 'pointer'
-          };
-
-          return (
-            <div
-              key={cupIndex}
-              className="cup"
-              style={style}
-              onClick={() => handleGuess(cupIndex)}
-            >
-              {/* Reveal ball if user found it OR the game is over (all attempts used) 
-                  and the ball is under this cup */}
-              {(gameOver && cupIndex === ballPosition) || (foundBall && cupIndex === ballPosition) ? (
-                <div className="ball" />
-              ) : (
-                <div className="hidden-ball" />
-              )}
-            </div>
-          );
-        })}
-      </div>
+      {/* Replaced old <div className="cups-container"> with 3D canvas */}
+      <ShellGameCanvas
+        ballPosition={ballPosition}
+        disabledCups={disabledCups}
+        gameOver={gameOver}
+        foundBall={foundBall}
+        onCupClick={handleGuess}
+      />
 
       <p style={{ fontWeight: 'bold', marginTop: '20px' }}>{message}</p>
 
-      {/* Only show "Play Again" if the game is over */}
       {gameOver && (
         <button onClick={startNewRound}>
           Play Again
         </button>
       )}
 
-      {/* Sound effects */}
+      {/* SFX */}
       <audio ref={correctSFXRef} src="/correct.mp3" />
       <audio ref={wrongSFXRef} src="/wrong.mp3" />
+
+      {/* NEW: Leaderboard below the game */}
+      <Leaderboard />
     </div>
   );
 }

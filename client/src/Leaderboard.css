@@ -1,0 +1,15 @@
+/* Leaderboard.css */
+.leaderboard-container {
+    margin-top: 40px;
+    background: rgba(255,255,255,0.3);
+    border-radius: 8px;
+    padding: 10px;
+    width: 300px;
+    margin: 20px auto;
+  }
+  
+  .leaderboard-container ul {
+    list-style: none;
+    padding: 0;
+  }
+  

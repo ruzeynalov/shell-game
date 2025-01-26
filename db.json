@@ -1,4 +1,39 @@
 {
-    "results": []
-  }
-  
+  "results": [
+    {
+      "username": "Rustam",
+      "outcome": "lose",
+      "timestamp": "2025-01-26T19:36:58.372Z"
+    },
+    {
+      "username": "Rustam",
+      "outcome": "win",
+      "timestamp": "2025-01-26T19:37:32.606Z"
+    },
+    {
+      "username": "Rustam",
+      "outcome": "lose",
+      "timestamp": "2025-01-26T19:38:21.149Z"
+    },
+    {
+      "username": "Rustam",
+      "outcome": "lose",
+      "timestamp": "2025-01-26T19:38:25.825Z"
+    },
+    {
+      "username": "Rustam",
+      "outcome": "lose",
+      "timestamp": "2025-01-26T19:38:31.206Z"
+    },
+    {
+      "username": "Rustam",
+      "outcome": "lose",
+      "timestamp": "2025-01-26T19:38:41.184Z"
+    },
+    {
+      "username": "Rustam",
+      "outcome": "win",
+      "timestamp": "2025-01-26T19:41:30.260Z"
+    }
+  ]
+}
