@@ -3,9 +3,9 @@ import express from 'express';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import Redis from 'ioredis';
+import { Low } from 'lowdb';
+import { JSONFile } from 'lowdb/node';
 
-// Resolve __dirname
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -13,59 +13,56 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// ioredis client setup
-const redisClient = new Redis("rediss://:p64efc76d71d932225353f32f6accc20514acbb73df5b3c540c8f989437356d92@ec2-3-218-212-254.compute-1.amazonaws.com:10230", {
-  tls: {
-    rejectUnauthorized: false,
-  },
+// Setup lowdb
+const dbFilePath = path.join(__dirname, 'db.json');
+const adapter = new JSONFile(dbFilePath);
+const db = new Low(new JSONFile('db.json'), {
+  // autoLoad means it'll automatically call read()
+  // autoSave means it'll automatically call write()
+  autoLoad: true,
+  autoSave: true,
+
+  // If there's no data after reading, use this default
+  defaultData: {
+    results: []
+  }
 });
 
-redisClient.on('error', (err) => console.error('Redis Client Error', err));
+async function initDB() {
+  await db.read();
+  db.data ||= { results: [] }; // fallback if empty
+  await db.write();
+}
 
-// Initialize Redis data structure if empty
-const RESULTS_KEY = 'results';
-(async () => {
-  const exists = await redisClient.exists(RESULTS_KEY);
-  if (!exists) {
-    await redisClient.set(RESULTS_KEY, JSON.stringify([]));
-  }
-})();
+// 1) Wait for DB init to finish
+await initDB();
 
-// Routes
+// 2) Define your routes, which can now safely reference db.data
 app.get('/api/results', async (req, res) => {
-  try {
-    const data = await redisClient.get(RESULTS_KEY);
-    const results = JSON.parse(data) || [];
-    res.json(results);
-  } catch (err) {
-    console.error(err);
-    res.status(500).send('Error fetching results');
-  }
+  await db.read(); // always refresh from file
+  res.json(db.data.results);
 });
 
 app.post('/api/results', async (req, res) => {
-  try {
-    const { username, outcome } = req.body;
-    if (!username || !outcome) {
-      return res.status(400).send('Invalid data');
-    }
-
-    const newResult = { username, outcome, timestamp: new Date().toISOString() };
-    const data = await redisClient.get(RESULTS_KEY);
-    const results = JSON.parse(data) || [];
-
-    results.push(newResult);
-    await redisClient.set(RESULTS_KEY, JSON.stringify(results));
-
-    res.status(201).json(newResult);
-  } catch (err) {
-    console.error(err);
-    res.status(500).send('Error saving result');
-  }
+  await db.read();
+  db.data.results.push({
+    username: req.body.username,
+    outcome: req.body.outcome,
+    timestamp: new Date().toISOString()
+  });
+  
+  await db.write();
+  res.status(201).json({ message: 'Result saved' });
 });
 
-// Start server
-const PORT = process.env.PORT || 3000;
+// 3) Optionally serve your React build
+app.use(express.static(path.join(__dirname, 'client/build')));
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
+});
+
+// 4) Start server
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
