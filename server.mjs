@@ -3,7 +3,7 @@ import express from 'express';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { createClient } from 'redis';
+import Redis from 'ioredis';
 
 // Resolve __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -13,13 +13,14 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Redis client setup
-const redisClient = createClient({
-  url: process.env.REDIS_URL || 'rediss://:p64efc76d71d932225353f32f6accc20514acbb73df5b3c540c8f989437356d92@ec2-3-218-212-254.compute-1.amazonaws.com:10230', // Ensure Redis URL is set for Heroku
+// ioredis client setup
+const redisClient = new Redis("rediss://:p64efc76d71d932225353f32f6accc20514acbb73df5b3c540c8f989437356d92@ec2-3-218-212-254.compute-1.amazonaws.com:10230", {
+  tls: {
+    rejectUnauthorized: false,
+  },
 });
 
 redisClient.on('error', (err) => console.error('Redis Client Error', err));
-await redisClient.connect();
 
 // Initialize Redis data structure if empty
 const RESULTS_KEY = 'results';
