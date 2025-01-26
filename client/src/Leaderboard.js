@@ -14,9 +14,11 @@ function Leaderboard() {
   async function fetchLeaderboard() {
     try {
       const resp = await axios.get('/api/leaderboard');
-      setPlayers(resp.data);
+      console.log('API response:', resp.data); // Debugging log
+      setPlayers(Array.isArray(resp.data) ? resp.data : []); // Ensure players is an array
     } catch (err) {
       console.error('Error fetching leaderboard:', err);
+      setPlayers([]); // Fallback to empty array on error
     }
   }
 
@@ -25,7 +27,7 @@ function Leaderboard() {
       <h3>Global Leaderboard</h3>
       <button onClick={fetchLeaderboard}>Refresh</button>
       <ul>
-        {players.map((player, idx) => (
+        {Array.isArray(players) && players.map((player, idx) => (
           <li key={player.username}>
             {idx + 1}. {player.username} — {player.wins} wins
           </li>
