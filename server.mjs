@@ -64,6 +64,33 @@ app.post('/api/results', async (req, res) => {
   }
 });
 
+// Leaderboard route
+app.get('/api/leaderboard', async (req, res) => {
+  try {
+    const data = await redisClient.get(RESULTS_KEY);
+    const results = JSON.parse(data) || [];
+
+    // Tally wins for each username
+    const tallies = {};
+    for (const entry of results) {
+      const { username, outcome } = entry;
+      if (!tallies[username]) {
+        tallies[username] = { username, wins: 0 };
+      }
+      if (outcome === 'win') {
+        tallies[username].wins++;
+      }
+    }
+
+    // Convert tallies to an array and sort by wins descending
+    const leaderboard = Object.values(tallies).sort((a, b) => b.wins - a.wins);
+    res.json(leaderboard);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error fetching leaderboard');
+  }
+});
+
 // 3) Optionally serve your React build
 app.use(express.static(path.join(__dirname, 'client/build')));
 app.get('*', (req, res) => {
