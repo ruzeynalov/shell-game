@@ -23,4 +23,10 @@ yarn-error.log*
 
 .DS_Store
 
+<<<<<<< HEAD
 node_modules/
+=======
+node_modules
+
+package-lock.json
+>>>>>>> b3e81da6 (Added node_modules to .gitignore)
