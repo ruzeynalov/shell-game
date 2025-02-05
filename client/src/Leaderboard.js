@@ -7,27 +7,34 @@ function Leaderboard() {
   const [players, setPlayers] = useState([]);
 
   useEffect(() => {
-    // Fetch on mount
+    // Immediately fetch once on mount
     fetchLeaderboard();
+
+    // Poll every 5 seconds
+    const intervalId = setInterval(() => {
+      fetchLeaderboard();
+    }, 5000);
+
+    // Cleanup
+    return () => clearInterval(intervalId);
   }, []);
 
   async function fetchLeaderboard() {
     try {
       const resp = await axios.get('/api/leaderboard');
-      console.log('API response:', resp.data); // Debugging log
-      setPlayers(Array.isArray(resp.data) ? resp.data : []); // Ensure players is an array
+      console.log('Leaderboard data:', resp.data);
+      setPlayers(Array.isArray(resp.data) ? resp.data : []);
     } catch (err) {
       console.error('Error fetching leaderboard:', err);
-      setPlayers([]); // Fallback to empty array on error
+      setPlayers([]);
     }
   }
 
   return (
     <div className="leaderboard-container">
-      <h3>Global Leaderboard</h3>
-      <button onClick={fetchLeaderboard}>Refresh</button>
+      <h3>Global Leaderboard (auto‐updating)</h3>
       <ul>
-        {Array.isArray(players) && players.map((player, idx) => (
+        {players.map((player, idx) => (
           <li key={player.username}>
             {idx + 1}. {player.username} — {player.wins} wins
           </li>
