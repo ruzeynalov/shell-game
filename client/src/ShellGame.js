@@ -1,136 +1,117 @@
 // ShellGame.js
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import './ShellGame.css';
+import './ShellGame.css'; 
 import ShellGameCanvas from './ShellGameCanvas.js';
 import Leaderboard from './Leaderboard.js';
 
 function ShellGame({ username }) {
-  const [ballPosition, setBallPosition] = useState(null);  // 0..2
+  const [ballPosition, setBallPosition] = useState(null); 
   const [attemptsUsed, setAttemptsUsed] = useState(0);
-  const [disabledCups, setDisabledCups] = useState([true, true, true]); // initially disabled
+  // Instead of "disabledPlanets," we'll track wrong guesses
+  const [planetWrong, setPlanetWrong] = useState([false, false, false]);
+
   const [message, setMessage] = useState('');
   const [wins, setWins] = useState(0);
   const [losses, setLosses] = useState(0);
   const [gameOver, setGameOver] = useState(false);
   const [foundBall, setFoundBall] = useState(false);
 
-  const [roundKey, setRoundKey] = useState(0);    // triggers multiple shuffles
-  const [isShuffling, setIsShuffling] = useState(true); // disable cups until shuffle done
-
   const correctSFXRef = useRef(null);
   const wrongSFXRef = useRef(null);
 
+  // On mount or username change, load local stats and start a round
   useEffect(() => {
-    // load stats from local storage
-    const localWins = localStorage.getItem(`${username}_shellGameWins`);
-    const localLosses = localStorage.getItem(`${username}_shellGameLosses`);
-    if (localWins) setWins(parseInt(localWins, 10));
-    if (localLosses) setLosses(parseInt(localLosses, 10));
+    const w = localStorage.getItem(`${username}_shellGameWins`);
+    const l = localStorage.getItem(`${username}_shellGameLosses`);
+    if (w) setWins(parseInt(w, 10));
+    if (l) setLosses(parseInt(l, 10));
     startNewRound();
-    // eslint-disable-next-line
   }, [username]);
 
   function startNewRound() {
-    // pick random ball
+    // pick random planet that has the ball
     const randomPos = Math.floor(Math.random() * 3);
     setBallPosition(randomPos);
 
-    // reset
     setAttemptsUsed(0);
-    setDisabledCups([true, true, true]); // disable until shuffle is done
-    setMessage('Shuffling...');
+    setPlanetWrong([false, false, false]);
+    setMessage('Pick a planet to find the ball...');
     setGameOver(false);
     setFoundBall(false);
-    setIsShuffling(true);
-
-    // triggers the canvas to do multi-shuffle
-    setRoundKey(k => k + 1);
   }
 
-  // Called by canvas after all shuffles complete
-  function onShufflesDone() {
-    setIsShuffling(false);
-    setDisabledCups([false, false, false]);
-    setMessage('Guess which cup has the ball!');
-  }
-
-  async function handleGuess(cupIndex) {
-    // if still shuffling or game is over => do nothing
-    if (isShuffling || gameOver || disabledCups[cupIndex]) return;
-
-    // disable that cup
-    setDisabledCups(prev => {
-      const arr = [...prev];
-      arr[cupIndex] = true;
-      return arr;
-    });
+  async function handleGuess(planetIndex) {
+    if (gameOver) return;
 
     setAttemptsUsed(prev => prev + 1);
-    const success = (cupIndex === ballPosition);
 
+    const success = (planetIndex === ballPosition);
     if (success) {
       setFoundBall(true);
       setGameOver(true);
       setMessage('Correct! You found the ball!');
       correctSFXRef.current?.play();
 
+      // increment local wins
       const newWins = wins + 1;
       setWins(newWins);
       localStorage.setItem(`${username}_shellGameWins`, newWins);
 
-      // Save "win" to DB (Redis)
       await saveResultToDB('win');
     } else {
+      // Wrong guess
       if (attemptsUsed + 1 === 2) {
+        // out of attempts => lose
         setGameOver(true);
-        setMessage(`Wrong! 2 tries used, you lose! The ball was under cup ${ballPosition+1}`);
+        setMessage(`Wrong! 2 tries used. The ball was under planet #${ballPosition + 1}`);
         wrongSFXRef.current?.play();
 
+        // increment local losses
         const newLosses = losses + 1;
         setLosses(newLosses);
         localStorage.setItem(`${username}_shellGameLosses`, newLosses);
 
-        // Save "lose" to DB
         await saveResultToDB('lose');
       } else {
+        // 1st wrong guess
         setMessage('Wrong guess, try again!');
         wrongSFXRef.current?.play();
+
+        // mark that planet as "wrong" -> show red circle with "Try another one!"
+        setPlanetWrong(prev => {
+          const arr = [...prev];
+          arr[planetIndex] = true;
+          return arr;
+        });
       }
     }
   }
 
   async function saveResultToDB(outcome) {
     try {
-      // Ensure username is not empty
-      if (!username) {
-        console.warn('No username, skipping DB save');
-        return;
-      }
-      const resp = await axios.post('/api/results', {
-        username,
-        outcome
-      });
-      console.log('Result saved to DB (Redis):', resp.data);
+      if (!username) return; // skip if no username
+      await axios.post('/api/results', { username, outcome });
     } catch (err) {
       console.error('Failed to save result to DB:', err);
     }
   }
 
   return (
-    <div className="shell-game-container">
-      <h2>Hello, {username || 'Anon'}!</h2>
+    <div className="shell-game-page">
+      <h2>Hello, {username || 'Guest'}!</h2>
       <p>Wins: {wins} | Losses: {losses}</p>
 
-      <ShellGameCanvas
-        ballPosition={ballPosition}
-        disabledCups={disabledCups}
-        gameOver={gameOver}
-        foundBall={foundBall}
-        roundKey={roundKey}     // triggers multi-shuffle
-        onCupClick={handleGuess}
-        onShufflesDone={onShufflesDone}  // callback from canvas
-      />
+      {/* Container with background (coins cloth) for the canvas */}
+      <div className="planets-container">
+        <ShellGameCanvas
+          ballPosition={ballPosition}
+          planetWrong={planetWrong}       // pass array of bools
+          foundBall={foundBall}
+          gameOver={gameOver}
+          onPlanetClick={handleGuess}
+        />
+      </div>
 
       <p style={{ fontWeight: 'bold', marginTop: '20px' }}>{message}</p>
       {gameOver && (

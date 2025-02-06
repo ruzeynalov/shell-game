@@ -1,15 +1,20 @@
 /* ShellGame.css */
-.shell-game-container {
-  width: 600px;
-  margin: 0 auto;
+
+/* Basic page styling */
+.shell-game-page {
   text-align: center;
   padding: 20px;
+  background-color: #f8f8f8;
 }
 
-.cups-container {
-  display: none; /* No longer used, replaced by canvas */
-}
+/* Container around the canvas with coins cloth background */
+.planets-container {
+  width: 800px;  /* match your canvas */
+  height: 450px; /* match your canvas */
+  margin: 0 auto;
+  position: relative;
 
-.cup, .ball, .hidden-ball {
-  display: none; /* We replaced them with canvas rendering */
+  /* The background image. Make sure "background.jpg" is in /public/ */
+  background: url("/public/background.jpg") no-repeat center center;
+  background-size: cover;
 }
