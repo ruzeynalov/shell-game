@@ -1,14 +1,14 @@
 # Shell Game
 
-A single‐player shell game built with OpenAI o1 model utilizing Node.js, React (frontend) and Express + lowdb (backend).
+A single‐player shell game built with OpenAI o1 model utilizing Node.js, React (frontend) and Express + Redis (backend).
 
 Demo availble [here](https://shell-game-88b6a1a8adfc.herokuapp.com)
 
 ## Game Concept
 
-- You have **3 cups** and **1 ball**.  
-- The ball is placed under one of the cups at random.  
-- The player must guess which cup hides the ball.  
+- You have **3 spheres** and **1 ball**.  
+- The ball is placed under one of the spheres at random.  
+- The player must guess which spheres hides the ball.  
 - A correct guess is a **win**, an incorrect guess is a **loss**.  
 - After each round, you can play again.
 
@@ -16,7 +16,7 @@ Demo availble [here](https://shell-game-88b6a1a8adfc.herokuapp.com)
 
 - **Single‐Player**: Enter your name before starting.  
 - **Local Storage**: Keeps track of your personal wins/losses.  
-- **Lightweight Database**: Uses [lowdb](https://github.com/typicode/lowdb) to record results on the backend.  
+- **Lightweight Database**: Uses [redis](https://github.com/redis/ioredis) to record results on the backend.  
 - **Fun Sound Effects**: Background music and correct/wrong guess sounds (you can add your own `.mp3` files).  
 
 ## Installation & Configuration

@@ -7,6 +7,11 @@
   background-color: #f8f8f8;
 }
 
+.shell-game-container {
+  text-align: center;
+  padding: 20px;
+}
+
 /* Container around the canvas with coins cloth background */
 .planets-container {
   width: 800px;  /* match your canvas */
@@ -17,4 +22,62 @@
   /* The background image. Make sure "background.jpg" is in /public/ */
   background: url("/public/background.jpg") no-repeat center center;
   background-size: cover;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.session-info {
+  margin: 20px auto;
+  max-width: 600px;
+  padding: 15px;
+  background: rgba(255,255,255,0.9);
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.players-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px;
+}
+
+.player {
+  padding: 8px;
+  border-radius: 4px;
+  background: #f5f5f5;
+}
+
+.player.you {
+  background: #e3f2fd;
+  font-weight: bold;
+}
+
+.player.current-turn {
+  background: #e8f5e9;
+  border: 2px solid #4caf50;
+  font-weight: bold;
+  animation: pulseHighlight 2s infinite;
+}
+
+.winner-message {
+  margin: 20px auto;
+  padding: 20px;
+  background: linear-gradient(135deg, #ffd700, #ffa500);
+  border-radius: 10px;
+  color: #fff;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+  animation: celebrationPulse 2s infinite;
+}
+
+@keyframes celebrationPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+@keyframes pulseHighlight {
+  0% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(76, 175, 80, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
 }

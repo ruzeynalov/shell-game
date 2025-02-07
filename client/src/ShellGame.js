@@ -5,118 +5,126 @@ import './ShellGame.css';
 import ShellGameCanvas from './ShellGameCanvas.js';
 import Leaderboard from './Leaderboard.js';
 
-function ShellGame({ username }) {
-  const [ballPosition, setBallPosition] = useState(null); 
-  const [attemptsUsed, setAttemptsUsed] = useState(0);
-  // Instead of "disabledPlanets," we'll track wrong guesses
+function ShellGame({ username, sessionState, isCurrentPlayer }) {
   const [planetWrong, setPlanetWrong] = useState([false, false, false]);
-
   const [message, setMessage] = useState('');
-  const [wins, setWins] = useState(0);
-  const [losses, setLosses] = useState(0);
   const [gameOver, setGameOver] = useState(false);
   const [foundBall, setFoundBall] = useState(false);
+  const [winner, setWinner] = useState(null);
+  const [showCongrats, setShowCongrats] = useState(false);
+  const congratsTimerRef = useRef(null);
 
   const correctSFXRef = useRef(null);
   const wrongSFXRef = useRef(null);
 
-  // On mount or username change, load local stats and start a round
+  // Reset state when session changes
   useEffect(() => {
-    const w = localStorage.getItem(`${username}_shellGameWins`);
-    const l = localStorage.getItem(`${username}_shellGameLosses`);
-    if (w) setWins(parseInt(w, 10));
-    if (l) setLosses(parseInt(l, 10));
-    startNewRound();
-  }, [username]);
+    if (sessionState) {
+      setPlanetWrong([false, false, false]);
+      setFoundBall(false);
+      setGameOver(false);
+      setWinner(null);
+      setMessage(isCurrentPlayer ? 
+        `${username}, it's your turn to vote! Pick a planet to find the ball...` : 
+        `Waiting for ${sessionState.players[sessionState.currentPlayerIndex]} to play...`);
+    }
+  }, [sessionState, isCurrentPlayer, username]);
 
-  function startNewRound() {
-    // pick random planet that has the ball
-    const randomPos = Math.floor(Math.random() * 3);
-    setBallPosition(randomPos);
+  // Handle congratulations message timer
+  useEffect(() => {
+    if (winner) {
+      setShowCongrats(true);
+      // Clear any existing timer
+      if (congratsTimerRef.current) {
+        clearTimeout(congratsTimerRef.current);
+      }
+      // Set new timer for 2 minutes
+      congratsTimerRef.current = setTimeout(() => {
+        setShowCongrats(false);
+      }, 120000); // 2 minutes in milliseconds
+    }
 
-    setAttemptsUsed(0);
-    setPlanetWrong([false, false, false]);
-    setMessage('Pick a planet to find the ball...');
-    setGameOver(false);
-    setFoundBall(false);
-  }
+    return () => {
+      if (congratsTimerRef.current) {
+        clearTimeout(congratsTimerRef.current);
+      }
+    };
+  }, [winner]);
 
   async function handleGuess(planetIndex) {
-    if (gameOver) return;
+    if (!isCurrentPlayer || gameOver) return;
 
-    setAttemptsUsed(prev => prev + 1);
-
-    const success = (planetIndex === ballPosition);
-    if (success) {
-      setFoundBall(true);
-      setGameOver(true);
-      setMessage('Correct! You found the ball!');
-      correctSFXRef.current?.play();
-
-      // increment local wins
-      const newWins = wins + 1;
-      setWins(newWins);
-      localStorage.setItem(`${username}_shellGameWins`, newWins);
-
-      await saveResultToDB('win');
-    } else {
-      // Wrong guess
-      if (attemptsUsed + 1 === 2) {
-        // out of attempts => lose
-        setGameOver(true);
-        setMessage(`Wrong! 2 tries used. The ball was under planet #${ballPosition + 1}`);
-        wrongSFXRef.current?.play();
-
-        // increment local losses
-        const newLosses = losses + 1;
-        setLosses(newLosses);
-        localStorage.setItem(`${username}_shellGameLosses`, newLosses);
-
-        await saveResultToDB('lose');
-      } else {
-        // 1st wrong guess
-        setMessage('Wrong guess, try again!');
-        wrongSFXRef.current?.play();
-
-        // mark that planet as "wrong" -> show red circle with "Try another one!"
-        setPlanetWrong(prev => {
-          const arr = [...prev];
-          arr[planetIndex] = true;
-          return arr;
-        });
-      }
-    }
-  }
-
-  async function saveResultToDB(outcome) {
     try {
-      if (!username) return; // skip if no username
-      await axios.post('/api/results', { username, outcome });
+      const { data } = await axios.post('/api/guess', { username, planetIndex });
+      
+      if (data.correct) {
+        setFoundBall(true);
+        setGameOver(true);
+        setWinner(username);
+        setMessage('Correct! You found the ball!');
+        correctSFXRef.current?.play();
+      } else {
+        if (data.gameOver) {
+          setGameOver(true);
+          setWinner(data.winner);
+          setMessage(data.winner === username ? 
+            'You win! Others failed to find the ball!' : 
+            `Game Over! ${data.winner} wins!`);
+          wrongSFXRef.current?.play();
+        } else {
+          setMessage(`Wrong guess! It's ${sessionState.players[sessionState.currentPlayerIndex + 1]}'s turn`);
+          wrongSFXRef.current?.play();
+          setPlanetWrong(prev => {
+            const arr = [...prev];
+            arr[planetIndex] = true;
+            return arr;
+          });
+        }
+      }
     } catch (err) {
-      console.error('Failed to save result to DB:', err);
+      console.error('Error making guess:', err);
+      setMessage('Error processing your guess');
     }
   }
 
   return (
-    <div className="shell-game-page">
-      <h2>Hello, {username || 'Guest'}!</h2>
-      <p>Wins: {wins} | Losses: {losses}</p>
-
-      {/* Container with background (coins cloth) for the canvas */}
+    <div className="shell-game-container">
       <div className="planets-container">
         <ShellGameCanvas
-          ballPosition={ballPosition}
-          planetWrong={planetWrong}       // pass array of bools
+          ballPosition={gameOver ? sessionState.ballPosition : null}
+          planetWrong={planetWrong}
           foundBall={foundBall}
           gameOver={gameOver}
           onPlanetClick={handleGuess}
         />
       </div>
 
-      <p style={{ fontWeight: 'bold', marginTop: '20px' }}>{message}</p>
-      {gameOver && (
-        <button onClick={startNewRound}>Play Again</button>
+      <p style={{ fontWeight: 'bold', marginTop: '20px' }}>
+        {message}
+      </p>
+
+      {showCongrats && winner && (
+        <div className="winner-message">
+          <h3>🎉 Congratulations {winner}! 🎉</h3>
+          <p>You won this session!</p>
+        </div>
       )}
+
+      <div className="session-info">
+        <h3>Current Session</h3>
+        <div className="players-list">
+          {sessionState.players.map((player, i) => (
+            <div 
+              key={player} 
+              className={`player ${player === username ? 'you' : ''} ${player === sessionState.players[sessionState.currentPlayerIndex] ? 'current-turn' : ''}`}
+            >
+              {`${i + 1}. ${player}`}
+              {player === sessionState.players[sessionState.currentPlayerIndex] && ' (current turn)'}
+              {player === username && ' (you)'}
+            </div>
+          ))}
+        </div>
+      </div>
 
       <audio ref={correctSFXRef} src="/correct.mp3" />
       <audio ref={wrongSFXRef} src="/wrong.mp3" />
