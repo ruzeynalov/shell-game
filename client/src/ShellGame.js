@@ -87,11 +87,26 @@ function ShellGame({ username, sessionState, isCurrentPlayer }) {
     }
   }
 
+  const handleQuitGame = async () => {
+    try {
+      await axios.post('/api/quit-game', { username });
+      setGameOver(false);
+      setFoundBall(false);
+      setPlanetWrong([false, false, false]);
+      setMessage('');
+      setWinner(null);
+      setShowCongrats(false);
+    } catch (err) {
+      console.error('Error quitting game:', err);
+      setMessage('Error quitting game');
+    }
+  };
+
   return (
     <div className="shell-game-container">
       <div className="planets-container">
         <ShellGameCanvas
-          ballPosition={gameOver ? sessionState.ballPosition : null}
+          ballPosition={sessionState.winner ? sessionState.ballPosition : null}
           planetWrong={planetWrong}
           foundBall={foundBall}
           gameOver={gameOver}
@@ -107,6 +122,25 @@ function ShellGame({ username, sessionState, isCurrentPlayer }) {
         <div className="winner-message">
           <h3>🎉 Congratulations {winner}! 🎉</h3>
           <p>You won this session!</p>
+          <button 
+            className="quit-game-btn"
+            onClick={handleQuitGame}
+          >
+            Return to Waiting Lobby
+          </button>
+        </div>
+      )}
+
+      {sessionState.winner && sessionState.winner !== winner && (
+        <div className="winner-message">
+          <h3>🎮 Game Won! 🎮</h3>
+          <p>{sessionState.winner} has won this session!</p>
+          <button 
+            className="quit-game-btn"
+            onClick={handleQuitGame}
+          >
+            Return to Waiting Lobby
+          </button>
         </div>
       )}
 

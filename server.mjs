@@ -185,21 +185,53 @@ async function handleWin(username) {
   users[username].wins++;
   await redisClient.set(USERS_KEY, JSON.stringify(users));
   
-  // Reset session
-  await redisClient.set(SESSION_KEY, JSON.stringify({
-    active: false,
-    players: [],
-    currentPlayerIndex: 0,
-    ballPosition: null,
-    attemptsUsed: 0
-  }));
-  
-  // Start new session if enough players waiting
-  const waitingList = JSON.parse(await redisClient.get(WAITING_LIST_KEY));
-  if (waitingList.length >= 3) {
-    await startNewSession();
-  }
+  // Don't reset session automatically anymore - it will be done when users quit
+  const session = JSON.parse(await redisClient.get(SESSION_KEY));
+  session.winner = username;
+  await redisClient.set(SESSION_KEY, JSON.stringify(session));
 }
+
+// New endpoint for quitting game
+app.post('/api/quit-game', async (req, res) => {
+  try {
+    const { username } = req.body;
+    const session = JSON.parse(await redisClient.get(SESSION_KEY));
+    const waitingList = JSON.parse(await redisClient.get(WAITING_LIST_KEY));
+
+    // Add user back to waiting list
+    if (!waitingList.includes(username)) {
+      waitingList.push(username);
+      await redisClient.set(WAITING_LIST_KEY, JSON.stringify(waitingList));
+    }
+
+    // Remove user from session
+    session.players = session.players.filter(player => player !== username);
+    
+    // If session is empty or has only 1 player left, reset it
+    if (session.players.length <= 1) {
+      await redisClient.set(SESSION_KEY, JSON.stringify({
+        active: false,
+        players: [],
+        currentPlayerIndex: 0,
+        ballPosition: null,
+        attemptsUsed: 0,
+        winner: null
+      }));
+      
+      // Start new session if enough players waiting
+      if (waitingList.length >= 3) {
+        await startNewSession();
+      }
+    } else {
+      await redisClient.set(SESSION_KEY, JSON.stringify(session));
+    }
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error quitting game');
+  }
+});  // <-- Added missing closing parenthesis here
 
 async function startNewSession() {
   try {

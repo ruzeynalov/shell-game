@@ -1,15 +1,97 @@
 /* Leaderboard.css */
 .leaderboard-container {
-    margin-top: 40px;
-    background: rgba(255,255,255,0.3);
-    border-radius: 8px;
-    padding: 10px;
-    width: 300px;
-    margin: 20px auto;
-  }
-  
-  .leaderboard-container ul {
-    list-style: none;
-    padding: 0;
-  }
-  
+  margin-top: 40px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 12px;
+  padding: 20px;
+  width: 80%;
+  max-width: 800px;
+  margin: 20px auto;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.leaderboard-title {
+  color: #2c3e50;
+  margin-bottom: 20px;
+  position: relative;
+  display: inline-block;
+}
+
+.leaderboard-title:after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, #3498db, #2ecc71);
+}
+
+.leaderboard-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.top-winners, .recent-games {
+  background: rgba(255, 255, 255, 0.8);
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.winner-entry {
+  display: flex;
+  align-items: center;
+  margin: 10px 0;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 6px;
+  transition: transform 0.2s;
+}
+
+.winner-entry:hover {
+  transform: translateX(5px);
+}
+
+.winner-rank {
+  width: 30px;
+  height: 30px;
+  background: #3498db;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 10px;
+  font-weight: bold;
+}
+
+.floating-sphere {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  position: absolute;
+  animation: float 3s ease-in-out infinite;
+  background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.8), rgba(52,152,219,0.6));
+  box-shadow: 0 0 10px rgba(52,152,219,0.3);
+}
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-15px); }
+  100% { transform: translateY(0px); }
+}
+
+.recent-game {
+  padding: 10px;
+  margin: 5px 0;
+  background: rgba(236, 240, 241, 0.8);
+  border-radius: 6px;
+  animation: slideIn 0.5s ease-out;
+}
+
+@keyframes slideIn {
+  from { transform: translateX(-20px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
