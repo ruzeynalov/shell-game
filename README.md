@@ -14,8 +14,7 @@ Demo availble [here](https://shell-game-88b6a1a8adfc.herokuapp.com)
 
 ## Features
 
-- **Single‐Player**: Enter your name before starting.  
-- **Local Storage**: Keeps track of your personal wins/losses.  
+- **Multi‐Player**: 3 players are required to sign up/sign in to start game 
 - **Lightweight Database**: Uses [redis](https://github.com/redis/ioredis) to record results on the backend.  
 - **Fun Sound Effects**: Background music and correct/wrong guess sounds (you can add your own `.mp3` files).  
 
