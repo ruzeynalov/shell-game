@@ -1,6 +1,6 @@
 # Shell Game
 
-A single‐player shell game built with OpenAI o1 model utilizing Node.js, React (frontend) and Express + Redis (backend).
+A multi‐player shell game built with OpenAI o1 and Claude 3.5 modes utilizing Node.js, React (frontend) and Express + Redis (backend).
 
 Demo availble [here](https://shell-game-88b6a1a8adfc.herokuapp.com)
 
